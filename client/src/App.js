@@ -2,6 +2,7 @@ import logo from './logo.svg';
 import './App.css';
 import LoginAndRegister from './Components/LoginAndRegister.jsx'
 import Home from "./Components/Home"
+import Matches from "./Components/Matches";
 import { useState, useEffect} from "react";
 
 
@@ -28,11 +29,18 @@ function App() {
     }
   }, []);
 
-  return (
-    <div className="App">
-        {logStatus ? <Home/> : <LoginAndRegister/>}
-    </div>
-  );
+    return (
+        <div className="App">
+            {logStatus ? (
+                <div className="content-container">
+                    <Matches />
+                    <Home />
+                </div>
+            ) : (
+                <LoginAndRegister />
+            )}
+        </div>
+    );
 }
 
 export default App;

@@ -36,3 +36,21 @@
     transform: rotate(360deg);
   }
 }
+
+.content-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 90vh;
+  gap: 20px;
+}
+
+/* Assuming Matches and Home should be styled similarly */
+.content-container > div {
+  flex-basis: calc(33.333% - 10px);
+  height: 90%;
+  margin: 5vh auto; /* Adjusted for vertical centering */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
