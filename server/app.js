@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const userRoutes = require('./routes/users');
 const imageRouter = require('./routes/images')
+const matchRouter = require('./routes/matches')
 const path = require('path');
 const cors = require('cors');
 const express = require('express');
@@ -36,6 +37,7 @@ app.get('/api/private', passport.authenticate('jwt', { session: false }), (req, 
 
 app.use('/api/user', userRoutes);
 app.use('/api/images', imageRouter);
+app.use('/api/matches', matchRouter);
 
 //CORS
 if (process.env.NODE_ENV === "production") {

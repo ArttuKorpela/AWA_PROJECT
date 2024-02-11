@@ -6,8 +6,11 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');dotenv.config();
 const Users = require('../Models/Users');
-const passport = require('../passportConfig'); //test
-console.log(passport)
+const Like =require('../Models/Like');
+const Match = require('../Models/Match')
+const Chat = require('../Models/Chat');
+const passport = require('../passportConfig');
+
 
 
 
@@ -54,7 +57,7 @@ router.post("/login/", async (req,res) => {
                 success: true,
                 token: token
               });
-            };
+            }
           });
 
         } else {
@@ -144,6 +147,40 @@ router.post("/register/",
       .catch(err => {
         console.error('Error fetching random user:', err);
       });
+  })
+
+  router.post("/match/",passport.authenticate('jwt', {session: false}), async (req, res) => {
+      const userID = req.body.userID;
+      const likeID = req.body.likeID;
+
+      const new_like = await Like.findOne({liker:userID,liked:likeID})
+      const reverse_like = await Like.findOne({liker:likeID, liked: userID})
+
+      if (new_like) {
+        console.log("1")
+        res.status(200).json({message: "like already exists"});
+      }
+      else if (!reverse_like) {
+        console.log("2")
+        const like = new Like({liker:userID, liked:likeID})
+        await like.save();
+        res.status(200).json({message: "Like created"});
+      }
+      else {
+        console.log("3")
+        //A match is found! Create the like, Match and Chat tables.
+        const like = new Like({liker:userID, liked:likeID});
+        await like.save();
+        const chat = new Chat({messages:[]}); //Initialize with an empty array
+        const saved_chat = await chat.save();
+        const match = new Match({
+          userID_1: userID,
+          userID_2: likeID,
+          chatID: saved_chat._id //save the chat id to the match
+        });
+        await match.save();
+        res.status(201).json({message: "A match was found!"})
+      }
   })
 
 
