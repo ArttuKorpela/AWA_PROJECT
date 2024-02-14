@@ -13,7 +13,8 @@ import {
 
 const MatchItem = (props) => {
     const url = "http://localhost:5000/api/images/";
-    const {user} = props;
+    const {user,chatID,setChatMode} = props;
+
     const moreInfo = <React.Fragment>
         <img style={{maxWidth:"300px"}} alt={"No picture"} src={url+user.picture_url}/>
         <Typography variant={"h6"} color="inherit" >{user.first_name} {user.last_name}</Typography>
@@ -22,10 +23,15 @@ const MatchItem = (props) => {
         {}
         <Typography variant={"body2"}>{user.bio}</Typography>
     </React.Fragment>
+    const handleClick = () => {
+        setChatMode({user:user,chat:chatID});
+    }
+
+
     return (
         <Tooltip title={moreInfo} placement={"right"}>
             <ListItem alignItems="flex-start">
-                <Card sx = {{width: "100%"}}>
+                <Card sx = {{width: "100%"}} onClick={handleClick}>
                     <CardContent sx={{display: "flex"}}>
                         <ListItemAvatar>
                             <Avatar alt="No Pic" src={url + user.picture_url}/>

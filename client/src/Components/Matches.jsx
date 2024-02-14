@@ -2,7 +2,9 @@ import React, {useEffect, useState} from 'react';
 import {Box, Card, CardContent, List, ListItem, Typography} from "@mui/material";
 import MatchItem from "./MatchItem";
 
-const Matches = () => {
+const Matches = (props) => {
+
+    let {setChatMode} = props
     useEffect(() => {
         getMatches()
     }, []);
@@ -22,7 +24,7 @@ const Matches = () => {
                     setUsers(null)  //No mathces found
                 } else {
                     response.json().then(data => {
-                        console.log(data.matches)
+
                         setUsers(data.matches);
                     });
                 }
@@ -46,7 +48,8 @@ const Matches = () => {
                     </Typography>
                     <List sx={{ width: '100%', minHeight: "100px"}}>
                     {users && users.map((user) => {
-                        return <MatchItem key={user.user._id} user={user.user}/>
+
+                        return <MatchItem key={user.user._id} user={user.user} chatID={user.chatID} setChatMode={setChatMode}/>
                     })}
                     </List>
                 </CardContent>
