@@ -3,13 +3,6 @@
 Advanced Web Applications \
 Arttu Korpela #xxxxxx \
 
-
-<p id="gdcalert1" ><span style="color: red; font-weight: bold">>>>>>  gd2md-html alert: inline image link here (to images/image1.png). Store image on your image server and adjust path/filename/extension if necessary. </span><br>(<a href="#">Back to top</a>)(<a href="#gdcalert2">Next alert</a>)<br><span style="color: red; font-weight: bold">>>>>> </span></p>
-
-
-![alt_text](images/image1.png "image_tooltip")
-
-
 Documentation for Arttu’s dating app
 
 22.1.2024
@@ -27,12 +20,8 @@ The backend for this project will be composed of Node.js, Express, and MongoDB. 
 
 For now, we will have four models User, Likes, Match, and Chat. Below is an illustration of how these will be connected:
 
+![Advanced Web Applications Harkkatyö](https://github.com/ArttuKorpela/AWA_PROJECT/assets/122992707/6044b5a2-dc9c-49fc-9a19-8e857e81033a)
 
-
-<p id="gdcalert2" ><span style="color: red; font-weight: bold">>>>>>  gd2md-html alert: inline drawings not supported directly from Docs. You may want to copy the inline drawing to a standalone drawing and export by reference. See <a href="https://github.com/evbacher/gd2md-html/wiki/Google-Drawings-by-reference">Google Drawings by reference</a> for details. The img URL below is a placeholder. </span><br>(<a href="#">Back to top</a>)(<a href="#gdcalert3">Next alert</a>)<br><span style="color: red; font-weight: bold">>>>>> </span></p>
-
-
-![drawing](https://docs.google.com/drawings/d/12345/export/png) \
 
 
 **Frontend design**
@@ -45,14 +34,7 @@ For now, we will have four models User, Likes, Match, and Chat. Below is an illu
 We’ll be using the Material React library due to its ease of use and flexibility. Also, a popular component library will make the page look and feel familiar to the user. 
 
 
-
-<p id="gdcalert3" ><span style="color: red; font-weight: bold">>>>>>  gd2md-html alert: inline image link here (to images/image2.png). Store image on your image server and adjust path/filename/extension if necessary. </span><br>(<a href="#">Back to top</a>)(<a href="#gdcalert4">Next alert</a>)<br><span style="color: red; font-weight: bold">>>>>> </span></p>
-
-
-![alt_text](images/image2.png "image_tooltip")
-
-
- 
+![Screenshot 2024-01-24 004239](https://github.com/ArttuKorpela/AWA_PROJECT/assets/122992707/b201dc9a-47c0-40e9-bb57-53a530af2f9c)
 
 
 # **Testing**
@@ -147,7 +129,7 @@ Cypress tests:
   <tr>
    <td>User Deletion Test
    </td>
-   <td>Should successfully delete the user and rnot let the user login after
+   <td>Should successfully delete the user and not let the user login after
    </td>
    <td>Pass
    </td>
