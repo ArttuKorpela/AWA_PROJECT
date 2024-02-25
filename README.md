@@ -6,7 +6,7 @@ Arttu Korpela #xxxxxx \
 Documentation for Arttu’s dating app
 
 22.1.2024
-
+[Link to video](https://lut-my.sharepoint.com/:v:/g/personal/arttu_korpela_student_lut_fi/EaYdiwW44dxOgXN0owite88Bd4JFI7uIsWvfRBh_qCmYvA?e=yMJwt4)
 
 # **Backend design**
 
