@@ -4,15 +4,27 @@ import { Box, Card, CardActions, CardContent, CardHeader, CardMedia, Button, Typ
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import HeartBrokenIcon from '@mui/icons-material/HeartBroken';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import PopUp from "./PopUp";
 
-export default function ImgMediaCard() {
-    const [user, setUser] = useState(null);
-    const [userIds, setUserIds] = useState([]);
+//The home component provides the user with other user to match with
+export default function Home(props) {
+    const {setChatMode, setValue, matches} = props;
+    //SetChatMode: State setter that will open the chat window
+    //setValue: Is a state state setter that will change the tab on mobile
+    //matches: Contains the users current matches.
 
+
+    const [user, setUser] = useState(null); //The current user shown
+    const [popup, setPopup] = useState(false) //If a match is made the popup state is activated
+    const [chatID, setChatID] = useState(null);//The chatID contains the chatID of the mnew match
+    const [matchedUser, setMatchedUser] = useState({}); // This state keeps the last matched user for the chat
+
+    //get the first user when app is opened
     useEffect(() => {
         getUser();
     }, []); // Dependency array is empty, so this effect runs only once on mount
 
+    //get user fetches a user from the database
     const getUser = () => {
         const token = localStorage.getItem('token');
 
@@ -23,17 +35,17 @@ export default function ImgMediaCard() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ excludedUserIds: userIds }) // Assuming your API can exclude users by IDs
+                body: JSON.stringify({ matches: matches }) //Send the current matches to exlcude them
             }).then(async response => {
                 if (!response.ok) {
                     setUser(null);
                 } else {
                     const data = await response.json();
-                    setUser(data.user);
+                    setUser(data.user); //Set the user to the state and the page will update
                 }
             });
         } else {
-            //handle authentication
+            //handle authentication. The page is refressed and if no token is found the login page will show
             window.location.replace(window.location.href)
         }
     };
@@ -59,36 +71,36 @@ export default function ImgMediaCard() {
             email: decodedJSON.email
         };
     }
-
+    //This function checks if there is a match when the user likes anoher user
     async function checkMatch(userID, likeID) {
-
         const token = localStorage.getItem("token");
         try {
-            return fetch("/api/user/match",
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    }
-                    ,
-                    body: JSON.stringify({userID: userID, likeID: likeID})
-                }).then(response => {
+            return fetch("/api/user/match", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({userID: userID, likeID: likeID})
+            }).then(response => {
                 if (!response.ok) {
                     throw new Error("Error in match making response");
-                } else {
-                    //New match created but no reverse match
-                    if (response.status === 200) {
-                        return false
-                    }
-                    //Match with a reverse match
-                    if (response.status === 201) {
-                        return true
-                    }
                 }
-            })
+                // For a 200 status, null is returned directly from this promise chain.
+                if (response.status === 200) {
+                    return null;
+                }
+                // For a 201 status, wait for the json() promise to resolve and then return chatID.
+                if (response.status === 201) {
+                    return response.json().then(data => {
+                        console.log("This works " + data.chatID);
+                        return data.chatID; // This return value will be the resolved value of the outer promise chain.
+                    });
+                }
+            });
         } catch (e) {
             console.error("Error in fetching match", e);
+            throw e; // Make sure to rethrow the error to not swallow it silently.
         }
     }
 
@@ -97,23 +109,18 @@ export default function ImgMediaCard() {
             const user_info = decodeJWT(localStorage.getItem("token"))
             //Check if a match is found
             const match_status = await checkMatch(user_info._id, user._id);
-            console.log(match_status)
             if (match_status) {
-                //Update the chat list
-                alert(`You matched with ${user.first_name}`)
+                setMatchedUser({...user}); // The matched users state will be updated
+                setChatID(match_status) //MatchStatus has the chat id
+                setPopup(true) // Trigger the popup
             }
         }
 
 
-        // Add the current user's ID to the list of user IDs
-        if (user && user._id) {
-            setUserIds(prevUserIds => [...prevUserIds, user._id]);
-        }
-
         // Fetch a new user
         getUser();
 
-        console.log(`${likeOrDislike} user with ID: ${user._id}`);
+        //console.log(`${likeOrDislike} user with ID: ${user._id}`);
     };
 
     if (!user) {
@@ -125,10 +132,8 @@ export default function ImgMediaCard() {
     }
 
     return (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-            <Card sx={{
-
-            }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '90vh', padding: "5px"}}>
+            <Card data-testid="home-card">
                 <Box>
                     <CardHeader action={<IconButton aria-label="settings"><MoreVertIcon /></IconButton>} />
                     <CardMedia sx={{
@@ -136,7 +141,7 @@ export default function ImgMediaCard() {
                     }}
                         component="img"
                         alt="User profile picture"
-                        image={user.picture_url ? `http://localhost:5000/api/images/${user.picture_url}` : "http://localhost:5000/api/images/default_image.jpeg"}
+                        image={user.picture_url ? `http://localhost:5000/api/images/${user.picture_url}` : "/no-img.jpg"}
                     />
                     <CardContent>
                         <Typography gutterBottom variant="h5" component="div">
@@ -168,6 +173,7 @@ export default function ImgMediaCard() {
                     </Button>
                 </CardActions>
             </Card>
+            {popup ? <PopUp open={popup} setOpen={setPopup} setChatMode={setChatMode} user={matchedUser} chatID={chatID} setValue={setValue}/> : null }
         </Box>
-    );
+    ); //If a match is found the popup state will be triggered
 };

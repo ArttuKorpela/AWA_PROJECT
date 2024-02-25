@@ -21,7 +21,8 @@ const userSchema = new mongoose.Schema({
     },
     picture_url: {
         type: String,
-    }
+    },
+    time: { type: Date, default: Date.now }, // Automatically set the time to the current time
 });
 
 const Users = mongoose.model('Users', userSchema);

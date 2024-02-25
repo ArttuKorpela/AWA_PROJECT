@@ -1,31 +1,45 @@
 import React, {useEffect, useState} from 'react';
-import {Box, Card, CardContent, List, ListItem, Typography} from "@mui/material";
+import {Box, Card, CardContent, CardHeader, IconButton, List, ListItem, Typography} from "@mui/material";
 import MatchItem from "./MatchItem";
+import FaceIcon from "@mui/icons-material/Face";
+import UserPopUp from "./UserPopUp";
 
+
+// Component definition accepting props
 const Matches = (props) => {
+    // Destructuring props to extract functions
+    const { setChatMode, setMatches } = props;
+    // State for controlling the dialog visibility
+    const [isDialogOpen, setIsDialogOpen] = useState(null);
 
-    let {setChatMode} = props
+    // State to hold the matches fetched from the API
+    let [users, setUsers] = useState(null);
+
+    // Effect hook to fetch matches on component mount
     useEffect(() => {
-        getMatches()
+        getMatches();
     }, []);
 
-    let [users, setUsers] = useState(null);
+    // Function to fetch matches from the server
     function getMatches() {
         try {
+            // Retrieve the authentication token from local storage
             const token = localStorage.getItem('token');
-            fetch("/api/matches/all",
-                {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                }).then(response => {
+            fetch("/api/matches/all", {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            }).then(response => {
                 if (response.status === 404) {
-                    setUsers(null)  //No mathces found
+                    // Handle case where no matches are found
+                    setUsers(null);
                 } else {
                     response.json().then(data => {
-
+                        // Update local state with fetched matches
                         setUsers(data.matches);
+                        // Update external state with matches for other components
+                        setMatches(data.matches);
                     });
                 }
             });
@@ -34,28 +48,30 @@ const Matches = (props) => {
         }
     }
 
+    // Function to handle the closing of the dialog
+    const handleDialogClose = () => {
+        setIsDialogOpen(null);
+    };
 
-
-
-
-
+    // Component render method
     return (
-        <Box >
+        <Box>
             <Card>
+                <CardHeader title={"Matches and Chat's"} />
                 <CardContent>
-                    <Typography variant="h6">
-                        Your Matches
-                    </Typography>
                     <List sx={{ width: '100%', minHeight: "100px"}}>
-                    {users && users.map((user) => {
-
-                        return <MatchItem key={user.user._id} user={user.user} chatID={user.chatID} setChatMode={setChatMode}/>
-                    })}
+                        {users && users.map((user) => (
+                            // Render a MatchItem for each user
+                            <MatchItem key={user.user._id} user={user.user} chatID={user.chatID} setChatMode={setChatMode} setIsDialogOpen={setIsDialogOpen}/>
+                        ))}
                     </List>
                 </CardContent>
             </Card>
+            {/* Popup dialog for user interactions */}
+            <UserPopUp open={isDialogOpen} onClose={handleDialogClose} />
         </Box>
     );
 };
 
+// Export the component for use in other parts of the application
 export default Matches;

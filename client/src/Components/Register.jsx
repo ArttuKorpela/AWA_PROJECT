@@ -2,6 +2,14 @@ import React, { useState } from 'react';
 import { Card, CardContent, TextField, Button, Typography, Container } from '@mui/material';
 import UploadButton from "./Uploadbutton";
 
+/*
+* The Register component is responsible for handling the registration of new users.
+* It incorporates form inputs for user details, an image upload button for profile pictures,
+* and validation for inputs like email and password.
+*/
+
+// State initialization for user data, profile image, preview source, and validation flags
+
 const Register = ({ onRegister }) => {
     const [userData, setUserData] = useState({});
     const [profileImage, setProfileImage] = useState(null);
@@ -9,6 +17,8 @@ const Register = ({ onRegister }) => {
     const [emailOK, setEmailError] = useState(true);
     const [passwordOK, setPasswordError] = useState(true);
     const [image, setImage] = useState(null)
+
+    // Function to set email error flag
 
     const badEmail = () => {
         setEmailError(false)
@@ -20,11 +30,11 @@ const Register = ({ onRegister }) => {
         setEmailError(true);
         setPasswordError(true);
         let imageURL = null;
-
+        // Upload image if present
         if (image){
             imageURL = await uploadImage();
         }
-
+        // Aggregate form data
         const formData = {
             first_name: e.target.first_name.value,
             last_name: e.target.last_name.value,
@@ -38,7 +48,7 @@ const Register = ({ onRegister }) => {
         //Check that all fields have information
         for (const [key, value] of Object.entries(formData)) {
             if (!value) {
-                if (!key == "pic_url") {
+                if (!key == "pic_url") { // 'pic_url' key does not need to be filled necessarily
                     alert(`Please fill in your ${key.replace('_', ' ')}`);
                     return;
                 }
@@ -56,13 +66,13 @@ const Register = ({ onRegister }) => {
         })
 
             .then(response => {
-                if (response.status === 200) {
+                if (response.status === 200) {// Callback function to signal successful registration
                     response.json()
                         .then(data => {
                             console.log(data);
                             onRegister(true);
                         })
-                } else if (response.status === 403) {
+                } else if (response.status === 403) {// Set email error flag if email is taken or incorrect
                     badEmail()
                 } else {
                     //Implement
@@ -70,17 +80,20 @@ const Register = ({ onRegister }) => {
             })
 
     }
+    // Update local state with form changes
     const handleChange = (e) => {
         setUserData({...userData,[e.target.name]:e.target.value});
     }
+    // Handle image selection and set preview
     const handleImageChange = async (img) => {
         //Set the image preview
-        setProfileImage(img);
+        setProfileImage(img);// Set preview source for the image
         setPreviewSrc(URL.createObjectURL(img));
         //save the image to a state
         setImage(img);
     };
 
+    // Upload selected image to the server
     const uploadImage = async () => {
         //Check Image state that it has an image
         if (image) {
@@ -98,7 +111,7 @@ const Register = ({ onRegister }) => {
         }
 
     }
-
+    // Post image data to the server and return the response
     const postImage = async (formData) => {
         try {
             const response = await fetch('/api/images/upload', {
@@ -112,7 +125,7 @@ const Register = ({ onRegister }) => {
                 throw new Error("Error in image upload");
             }
             const data = await response.json();
-            return data.imageName;
+            return data.imageName; // Return the name of the uploaded image
         } catch (error) {
             console.error('Error uploading image:', error);
             throw error;
@@ -129,16 +142,17 @@ const Register = ({ onRegister }) => {
 
 
 
-    //IMPLEMENT REGISTER
+
     return (
         <Container maxWidth="sm">
-            <Card>
+            <Card data-testid="register-card">
                 <CardContent>
                     <Typography variant="h5" component="h2" gutterBottom>
                         Register
                     <form onSubmit={handleSubmit} onChange={handleChange}>
                         {previewSrc && <img src={previewSrc} alt="Profile Preview" height="100" />}
                         <TextField
+                            data-testid = "firstname-field"
                             label="First Name"
                             variant= "outlined"
                             fullWidth
@@ -149,6 +163,7 @@ const Register = ({ onRegister }) => {
 
                         />
                         <TextField
+                            data-testid = "lastname-field"
                             label="Last Name"
                             variant="outlined"
                             fullWidth
@@ -160,6 +175,7 @@ const Register = ({ onRegister }) => {
 
                         <TextField
                             id="email"
+                            data-testid = "register-email-field"
                             label={emailOK ? "Email":"Error"}
                             variant=  "outlined"
                             fullWidth
@@ -172,6 +188,7 @@ const Register = ({ onRegister }) => {
                         />
                         <TextField
                             id="password"
+                            data-testid = "password-field"
                             label="Password"
                             variant="outlined"
                             fullWidth
@@ -182,6 +199,7 @@ const Register = ({ onRegister }) => {
                         />
 
                         <TextField
+                            data-testid = "punchline-field"
                             label="Punchline"
                             variant="outlined"
                             fullWidth
@@ -191,6 +209,7 @@ const Register = ({ onRegister }) => {
                             required
                         />
                         <TextField
+                            data-testid = "bio-field"
                             label="Bio"
                             variant="outlined"
                             fullWidth
@@ -205,9 +224,14 @@ const Register = ({ onRegister }) => {
                         />
 
 
-                        <UploadButton handleImageChange={handleImageChange} ></UploadButton>
+                        <UploadButton
+                            handleImageChange={handleImageChange} ></UploadButton>
                         {/* Add any other input fields for registration */}
-                        <Button variant="contained" color="primary" type="submit" fullWidth>
+                        <Button
+                            data-testid = "create-user-button"
+                            variant="contained"
+                            color="primary"
+                            type="submit" fullWidth>
                             Register
                         </Button>
                     </form>

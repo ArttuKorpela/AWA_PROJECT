@@ -14,39 +14,44 @@ import SendIcon from '@mui/icons-material/Send';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import CloseIcon from '@mui/icons-material/Close';
 
-const testmessages = [
-    { content: "Hello, how are you?", sender: "someoneelse" },
-    { content: "I'm good, thanks! How about you?", sender: "someoneelse" },
-    // Add more messages here
-];
-
+// The Chat component, which manages the chat interface.
 const Chat = (props) => {
+    // Destructure props to extract chat information and a setter function to toggle chat mode.
     const {chatInfo, setChatMode} = props;
+    // Base URL for fetching images.
     const url = "http://localhost:5000/api/images/";
+    // State to manage the user ID of the message sender.
     const ownID = getUserID();
+    // State for tracking the time of the last message.
     const [lastMessageTime, setLastMessageTime] = useState(null);
-    const [messages, setMessages] = useState(testmessages);
-    const [newMessage, setNewMessage] = useState({ content: "", sender: ownID });
+    // State for storing chat messages.
+    const [messages, setMessages] = useState([]);
+    // State for managing the content of a new message.
+    const [newMessage, setNewMessage] = useState({ content: "", sender: ownID, time:{}});
 
+    // Effect hook to clear messages and fetch chat history when the chatInfo changes.
     useEffect(() => {
+        console.log(ownID)
         setMessages([]);
         getChats(chatInfo.chat);
     }, [chatInfo]);
 
+    // Function to decode JWT from localStorage and extract the user ID.
     function getUserID() {
         const token = localStorage.getItem("token");
         const payload = token.split('.')[1]; // Get the payload
-        const decoded = atob(payload);
-        const data = JSON.parse(decoded);
-        return data._id;
+        const decoded = atob(payload);// Decode base64 payload to string
+        const data = JSON.parse(decoded); // Parse the JSON string to an object.
+        return data.id;
     }
 
-    const handleSendMessage = () => {
+    const handleSendMessage = async () => {
         if (!newMessage.content) return; // Prevent sending empty messages
         //Let's send the message to the db
-        sendMessageToDB(newMessage.content, chatInfo.chat) //Only message content and chatID are needed. Other info is gotten from the token.
-        setMessages([...messages, newMessage]);
-        setNewMessage({ content: "", sender: chatInfo.user._id }); // Reset input field after sending
+        await sendMessageToDB(newMessage.content, chatInfo.chat)//Only message content and chatID are needed. Other info is gotten from the token.
+        newMessage.time = new Date(); // Record the time the message was sent.
+        setMessages([...messages, newMessage]);// Add the new message to the chat.
+        setNewMessage({ content: "", sender: ownID, time:{} }); // Reset input field after sending
     };
 
     const sendMessageToDB = async (message, chatID) => {
@@ -100,9 +105,8 @@ const Chat = (props) => {
             }
 
             const data = await response.json();
-            console.log(data.messages)
-            setMessages(data.messages);
-            //Get the time og the latest message and concert it to a DateObject
+            setMessages(data.messages);// Update the chat messages state with fetched data.
+            //Get the time of the latest message and concert it to a DateObject
             const time = new Date(data.messages[data.messages.length-1].time);
             const string_time = time.toLocaleTimeString() //Convert to browsers time format
             setLastMessageTime(string_time);
@@ -114,7 +118,12 @@ const Chat = (props) => {
     };
 
     return (
-        <Card sx={{ maxWidth: 500, minHeight: 300 }}>
+        <Card sx={{
+            width: "95vw",
+            height: "90vh",
+            display: 'flex',
+            flexDirection: 'column'
+        }}>
             <CardHeader
                 avatar={
                     <Avatar src={url+chatInfo.user.picture_url}/>
@@ -136,15 +145,16 @@ const Chat = (props) => {
             <CardContent sx={{ height: "95%", overflow: 'auto' }}>
                 <List>
                     {messages.map((message, index) => (
-                        <Grid container key={index} justifyContent={message.sender === chatInfo.user._id ? 'flex-start' : 'flex-end'}>
+                        <Grid container key={index} justifyContent={message.sender === ownID ? 'flex-end':'flex-start'}>
                             <ListItem sx={{
-                                bgcolor: message.sender === chatInfo.user._id ? 'secondary.light':'primary.light',
+                                //The color and position of the messages is set messages sender id. If own then right and color primary
+                                bgcolor: message.sender === ownID ? 'primary.light':'secondary.light',
                                 borderRadius: '20px',
                                 maxWidth: '80%',
                                 mb: 1,
                                 wordBreak: 'break-word'
                             }}>
-                                <ListItemText primary={message.content} />
+                                <ListItemText primary={message.content} secondary={(new Date(message.time)).toLocaleTimeString()}/>
                             </ListItem>
                         </Grid>
                     ))}

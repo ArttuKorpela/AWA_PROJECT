@@ -26,6 +26,8 @@ const e = require("express");
 
 
     async function getMatchesFromDB(user) {
+        //This function finds all the users matches from the database.
+        //Look for mathces where the users id is either one
         return await Match.find({
             $or: [
                 {userID_1: user.id},
@@ -50,6 +52,7 @@ router.get('/all',passport.authenticate("jwt", {session: false}), async (req, re
                 user: null,
                 chatID: null,
             }
+            //Find the opposing users info from db. Query both options
             if (match.userID_1 === user_info.id) { //Query the other users info. Don't send the password and email.
                 matchObject.user = await Users.findOne({_id: match.userID_2},{password: 0, email: 0})
             } else if (match.userID_2 === user_info.id) {
@@ -58,7 +61,7 @@ router.get('/all',passport.authenticate("jwt", {session: false}), async (req, re
                 throw new Error("User ID error in match finding");
             }
             matchObject.chatID = match.chatID;
-            matchList.push(matchObject);
+            matchList.push(matchObject); //Add the correct chatID to the match object and add it to the list
 
         })).then(() => {
              if (matchList[0]) {
@@ -70,10 +73,10 @@ router.get('/all',passport.authenticate("jwt", {session: false}), async (req, re
         )
     }
 });
-
+//This post request get's the chatID and returns the messages
 router.post("/chat/get", passport.authenticate("jwt", {session: false}), async (req,res) => {
     const chatID = req.body.chatID;
-    const chat = await Chat.findOne({_id: chatID});
+    const chat = await Chat.findOne({_id: chatID}); //Find the chat from the db
 
     if (!chat) {
         res.status(404).json({succes:false, message: "No messages found", messages:[]})
@@ -82,27 +85,29 @@ router.post("/chat/get", passport.authenticate("jwt", {session: false}), async (
     }
 
 })
+//This function just updates the chat collection and adds the new message to the list
 const appendMessage = async (chatId, newMessage) => {
     try {
         await Chat.findByIdAndUpdate(
             chatId,
-            { $push: { messages: newMessage } },
-            { new: true, useFindAndModify: false } // Options: return the updated document, disable deprecated `findAndModify`
+            { $push: { messages: newMessage } }, //Push the new message to the list
+            { new: true, useFindAndModify: false }  //No modifications needed
         );
     } catch (error) {
         console.error('Error appending message:', error);
     }
 };
+//This post request just takes the chatID and uses the JWT to append new messages
 router.post("/chat/input", passport.authenticate("jwt", {session: false}), async (req,res) => {
     const chatID = req.body.chatID;
     const authHeader = req.headers.authorization;
     let token;
     token = getHeader(authHeader);
-    const user_info = decodeToken(token);
-    const message = {content:req.body.newMessage, sender: user_info.id};
+    const user_info = decodeToken(token); //Get the user info from the token
+    const message = {content:req.body.newMessage, sender: user_info.id}; //Create the message object
 
 
-    await appendMessage(chatID,message)
+    await appendMessage(chatID,message) //Add the message to the db
     res.json({message: "Message added"})
     //ADD ERROR HANDLING
 })
